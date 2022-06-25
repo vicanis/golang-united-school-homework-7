@@ -1,6 +1,8 @@
 package coverage
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"sort"
 	"testing"
@@ -131,5 +133,158 @@ func TestPeopleSortLastname(t *testing.T) {
 			"last item: last name '%s', expected '%s'",
 			p[0].lastName, persons[1].lastName,
 		)
+	}
+}
+
+func makeMatrix(s string, t *testing.T) (*Matrix, error) {
+	m, err := New(s)
+
+	if m == nil {
+		t.Errorf("matrix is nil")
+		return nil, errors.New("matrix is nil")
+	}
+
+	if err != nil {
+		t.Errorf("matrix create failed: %s", err)
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func TestMatrixSingleCell(t *testing.T) {
+	m, err := makeMatrix("1", t)
+
+	if err != nil {
+		return
+	}
+	
+	if m != nil && m.cols != 1 && m.rows != 1 {
+		t.Errorf("matrix size %d:%d, expected 1:1", m.cols, m.rows)
+	}
+}
+
+func TestMatrixRowLengthMismatch(t *testing.T) {
+	m, err := New("1\n2 3")
+
+	if m != nil && err == nil {
+		t.Errorf("row length mismatch error expected")
+	}
+}
+
+func TestMatrixNotADigit(t *testing.T) {
+	m, err := New("Z")
+
+	if m != nil && err == nil {
+		t.Errorf("parse error expected")
+	}
+}
+
+func checkIfEquals(a, b [][]int) error {
+	if len(a) != len(b) {
+		return fmt.Errorf("rows count mismatch: len(A)=%d, len(B)=%d", len(a), len(b))
+	}
+
+	for indexRow, rowA := range a {
+		rowB := b[indexRow]
+		
+		if len(rowA) != len(rowB) {
+			return fmt.Errorf(
+				"column count mismatch: len(A[%d])=%d, len(B[%d])=%d",
+				indexRow, len(rowA),
+				indexRow, len(rowB),
+			)
+		}
+
+		for indexCell, cellA := range rowA {
+			cellB := rowB[indexCell]
+		
+			if cellA != cellB {
+				return fmt.Errorf(
+					"cell value mismatch: A[%d:%d]=%d, B[%d:%d]=%d",
+					indexRow, indexCell, cellA,
+					indexRow, indexCell, cellB,
+				)
+			}
+		}
+	}
+
+	return nil
+}
+
+func TestMatrixRows(t *testing.T) {
+	m, err := makeMatrix("1 2\n3 4", t)
+
+	if err != nil {
+		return
+	}
+
+	expect := [][]int{
+		{1, 2},
+		{3, 4},
+	}
+
+	rows := m.Rows()
+
+	if rows == nil {
+		t.Errorf("call Rows() failed")
+		return
+	}
+
+	if err = checkIfEquals(expect, rows); err != nil {
+		t.Errorf("result of Rows() is not expected: %s", err)
+	}
+}
+
+func TestMatrixCols(t *testing.T) {
+	m, err := makeMatrix("1 2\n3 4", t)
+
+	if err != nil {
+		return
+	}
+
+	expect := [][]int{
+		{1, 3},
+		{2, 4},
+	}
+
+	cols := m.Cols()
+
+	if cols == nil {
+		t.Errorf("call Cols() failed")
+		return
+	}
+
+	if err = checkIfEquals(expect, cols); err != nil {
+		t.Errorf("result of Cols() is not expected: %s", err)
+	}
+}
+
+func TestMatrixSetOk(t *testing.T) {
+	m, err := makeMatrix("1 2\n3 4", t)
+
+	if err != nil {
+		return
+	}
+
+	ok := m.Set(1, 1, 100)
+
+	if ok != true {
+		t.Errorf("set value failed")
+		return
+	}
+}
+
+func TestMatrixSetOutOfRange(t *testing.T) {
+	m, err := makeMatrix("1 2\n3 4", t)
+
+	if err != nil {
+		return
+	}
+
+	ok := m.Set(0, 10, 10)
+
+	if ok == true {
+		t.Errorf("set value that is out of range, error expected")
 	}
 }
