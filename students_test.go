@@ -212,8 +212,10 @@ func checkIfEquals(a, b [][]int) error {
 	return nil
 }
 
+const testMatrixData = "1 2\n3 4"
+
 func TestMatrixRows(t *testing.T) {
-	m, err := makeMatrix("1 2\n3 4", t)
+	m, err := makeMatrix(testMatrixData, t)
 
 	if err != nil {
 		return
@@ -237,7 +239,7 @@ func TestMatrixRows(t *testing.T) {
 }
 
 func TestMatrixCols(t *testing.T) {
-	m, err := makeMatrix("1 2\n3 4", t)
+	m, err := makeMatrix(testMatrixData, t)
 
 	if err != nil {
 		return
@@ -261,7 +263,7 @@ func TestMatrixCols(t *testing.T) {
 }
 
 func TestMatrixSetOk(t *testing.T) {
-	m, err := makeMatrix("1 2\n3 4", t)
+	m, err := makeMatrix(testMatrixData, t)
 
 	if err != nil {
 		return
@@ -276,7 +278,7 @@ func TestMatrixSetOk(t *testing.T) {
 }
 
 func TestMatrixSetOutOfRange(t *testing.T) {
-	m, err := makeMatrix("1 2\n3 4", t)
+	m, err := makeMatrix(testMatrixData, t)
 
 	if err != nil {
 		return
